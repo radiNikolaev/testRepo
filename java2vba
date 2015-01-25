@@ -1,0 +1,156 @@
+>>ToBeExecuted.vbs
+>>automatically created in JAVA, example code below
+
+Option Explicit
+Dim excelObject
+
+Set excelObject = CreateObject("Excel.Application")
+excelObject.Visible = True
+excelObject.WorkBooks.Open "C:\Users\radi nikolaev\Documents\macros.xlsm", 0, True
+excelObject.Run "Macro3"
+'excelObject.Quit
+
+Set excelObject = Nothing
+
+-------------------------------------------
+>>the actual macro
+>>TODO create an environment variable called ARGS_LOCATION
+>>TODO run the actual macro at the end
+
+Sub RunMacros()
+'
+' RunMacros Macro
+'
+
+'
+    Dim args As String
+    args = "TEXT;" & Environ("ARGS_LOCATION")
+    
+   ' With ActiveSheet.QueryTables.Add(Connection:= _
+        "TEXT;C:\Users\radi nikolaev\Documents\args.csv", Destination:=Range("$A$1"))
+    With ActiveSheet.QueryTables.Add(Connection:= _
+        args, Destination:=Range("$A$1"))
+        '.CommandType = 0
+        
+        .Name = "args"
+        .FieldNames = True
+        .RowNumbers = False
+        .FillAdjacentFormulas = False
+        .PreserveFormatting = True
+        .RefreshOnFileOpen = False
+        .RefreshStyle = xlInsertDeleteCells
+        .SavePassword = False
+        .SaveData = False
+        .AdjustColumnWidth = False
+        .RefreshPeriod = 0
+        .TextFilePromptOnRefresh = False
+        .TextFilePlatform = 850
+        .TextFileStartRow = 1
+        .TextFileParseType = xlDelimited
+        .TextFileTextQualifier = xlTextQualifierDoubleQuote
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = True
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = False
+        .TextFileSpaceDelimiter = False
+        .TextFileColumnDataTypes = Array(1)
+        .TextFileTrailingMinusNumbers = True
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    Call CreatePdf
+    'Call CloseBook
+    
+End Sub
+
+
+-------------------------
+>>JAVA
+>>TODO adjust final strings
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
+public class Automation {
+
+	private static final String vbsPath = "C:/Users/radi nikolaev/Documents/macro.vbs";
+	private static final String excelFilePath = "C:/Users/radi nikolaev/Documents/macros.xlsm";
+	private static final String argOne = "argument 214";
+	private static final String argTwo = "haha it works";
+	private static final String macroName = "RunMacros";
+
+	public static void main(String[] args) throws IOException {
+		runMacros(vbsPath, excelFilePath, macroName, argOne, argTwo);
+	}
+
+	/**
+	 * pathToCsv = argOne pathToActiveUsers = argTwo
+	 * 
+	 * @param pathToVbs
+	 * @param pathToCsv
+	 * @param pathToActiveUsers
+	 * @throws IOException
+	 */
+	public static void runMacros(String pathToVbs, String pathToExcel,
+			String nameOfMacro, String pathToCsv, String pathToActiveUsers)
+			throws IOException {
+		
+		// keep it like that
+		String type = "wscript";
+		String vbsFile = type + " \"" + pathToVbs + "\"";
+		
+		createVbs(pathToVbs, pathToExcel, nameOfMacro);
+		
+		createArgs(pathToCsv, pathToActiveUsers);
+		
+		Runtime.getRuntime().exec(vbsFile);
+	}
+
+	/**
+	 * Specify the two arguments (i.e. paths) needed in the excel file by
+	 * placing them in a text file created in the location specified by the
+	 * environment variable "ARGS_LOCATION"
+	 * 
+	 * @param pathOne
+	 * @param pathTwo
+	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
+	 */
+	public static void createArgs(String pathOne, String pathTwo)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		String args = System.getenv("ARGS_LOCATION");
+		PrintWriter writer = new PrintWriter(args, "UTF-8");
+		writer.println(pathOne);
+		writer.println(pathTwo);
+		writer.close();
+	}
+
+	/**
+	 * create the executable .vbs file
+	 * 
+	 * @param pathToVbs
+	 * @param excelFile
+	 * @param macroToRun
+	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
+	 */
+	public static void createVbs(String pathToVbs, String pathToExcelFile,
+			String macroToRun) throws FileNotFoundException,
+			UnsupportedEncodingException {
+		PrintWriter writer = new PrintWriter(pathToVbs, "UTF-8");
+		writer.println("Option Explicit");
+		writer.println("Dim excelObject");
+		writer.println("");
+		writer.println("Set excelObject = CreateObject(" + "\""
+				+ "Excel.Application" + "\"" + ")");
+		writer.println("excelObject.Visible = True");
+		writer.println("excelObject.WorkBooks.Open " + "\"" + pathToExcelFile
+				+ "\"" + ", 0, True");
+		writer.println("excelObject.Run " + "\"" + macroToRun + "\"");
+		writer.println("");
+		writer.println("Set excelObject = Nothing");
+		writer.close();
+	}
+}
